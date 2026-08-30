@@ -55,7 +55,7 @@ public sealed class SendOrderConfirmationEmail : IDomainEventHandler<OrderPlaced
 ### Track and dispatch domain events from a unit of work
 
 ```csharp
-public sealed class SqlUnitOfWork(IAggregateRootChangeTracker changeTracker, ISender sender) : IUnitOfWork
+public sealed class SqlUnitOfWork(IAggregateRootChangeTracker changeTracker, IPublisher publisher) : IUnitOfWork
 {
     public async Task CommitAsync(CancellationToken ct)
     {
@@ -63,7 +63,7 @@ public sealed class SqlUnitOfWork(IAggregateRootChangeTracker changeTracker, ISe
         foreach (var aggregateRoot in changeTracker.Dequeue())
         {
             foreach (var domainEvent in aggregateRoot.DomainEvents)
-                await sender.Publish(domainEvent, ct);
+                await publisher.PublishAsync(domainEvent, ct);
 
             aggregateRoot.ClearDomainEvents();
         }
